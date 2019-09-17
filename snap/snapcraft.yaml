@@ -1,0 +1,38 @@
+name: gopass-ui
+base: core18
+version: '0.4.0'
+summary: gopass CLI + UI = an awesome cross-platform password manager for teams
+description: |
+  Gopass UI, an Electron based UI wrapper for your gopass on the command line. 
+  It makes your life easier by providing a rich graphical user interface to 
+  search and manage your secrets.
+
+grade: stable
+confinement: devmode # use 'strict' once you have the right plugs and slots
+
+apps:
+  gopass-ui:
+    command: bin/node $SNAP/main.js
+    extensions:
+      - gnome-3-28
+
+parts:
+  node:
+    plugin: dump
+    source: https://nodejs.org/dist/v10.16.3/node-v10.16.3-linux-x64.tar.xz
+    stage:
+      - bin
+      - include
+      - lib
+
+  gopass-ui:
+    after: [node]
+    plugin: nil
+    source: https://github.com/codecentric/gopass-ui.git
+    source-tag: 'v0.4.0'
+    override-build: |
+      npm config set unsafe-perm true
+      npm install
+      npm run build
+      npx electron-builder --dir
+      cp -a ./dist/. $SNAPCRAFT_PART_INSTALL/
